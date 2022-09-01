@@ -1,0 +1,59 @@
+"""We make a model for the speed of the car itself.The equation will be v = (c/m)*p - gamma*x
+where c and m are random constants which we will equate to 1 and u is the pressing power
+on the brake where x is the distance travelled"""
+import numpy as np
+import matplotlib.pyplot as plt
+class PID:
+    def __init__(self, c: float, m: float,r: float,v: float,dt: float,gamma: float,Kp: float,Kd: float,Ki: float,time: float):
+        self.c = c
+        self.m = m
+        self.dt =dt
+        self.r = r
+        self.v = v
+        self.gamma = gamma
+        self.Kp = Kp
+        self.Kd = Kd
+        self.Ki = Ki
+        self.time = time
+        # Store the points of the trajectory to plot
+        self.v_points = [self.v]
+        self.time_points = [self.time]
+
+    def controller(self,t: float):
+        """
+        The Linear Velocity model here is (c/m)*p - gamma*x. Here we shall make
+        the calculations
+        """
+        x = 0
+        E = 0
+        e_old = 0
+        self.t = t
+        k = self.t/self.dt
+        n = int(k)
+        for i in range(1,n+1):
+            e = self.r - self.v
+            E = E + e
+            e_dot=(e-e_old)
+            p = self.Kp*e + self.Ki*E + self.Kd*e_dot
+            self.v = (self.c/self.m)*p - self.gamma*x
+            x = (self.c/self.m)*p*self.dt - self.gamma*x*self.dt + x
+            e_old = e
+            self.time = self.time+self.dt
+            self.v_points.append(self.v)
+            self.time_points.append(self.time)
+        return self.v_points,self.time_points
+
+
+    def plot(self,):
+        """Function that plots the velocity of the car with time"""
+        plt.xlabel("Velocity")
+        plt.ylabel("Time")
+        plt.plot(self.v_points,self.time_points, color="red", alpha=0.75)
+        plt.grid()
+        plt.show()
+
+
+if __name__ == '__main__':
+    pid_1 = PID(1,1,1,0,0.01,0.1,1,0.01,1,0)
+    pid_1.controller(10)
+    print("The Cruise control shall adjust the speed ")
